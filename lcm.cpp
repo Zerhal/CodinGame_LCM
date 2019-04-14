@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -227,37 +227,52 @@ class Player{
   }
 };
 // Comparaison des carte pour le choix lors du Darft
-int compareCard(Card c1, Card c2, Card c3, int nbTour){
+int compareCard(Card* ptr_c1, Card* ptr_c2, Card* ptr_c3, int nbTour){
 
-  cerr << "Address Carte 2  apres : "  << &c2 << endl;
+  Card c1 = *ptr_c1;
+  Card c2 = *ptr_c2;
+  Card c3 = *ptr_c3;
+
   int bestCard = 1;
   int cost1 = c1.getCost();
   int cost2 = c2.getCost();
   int cost3 = c3.getCost();
 
-  int attack1 = c1.getAttack();
-  int attack2 = c2.getAttack();
-  int attack3 = c3.getAttack();
+  float attack1 = c1.getAttack();
+  float attack2 = c2.getAttack();
+  float attack3 = c3.getAttack();
 
-  int defense1 = c1.getDefense();
-  int defense2 = c2.getDefense();
-  int defense3 = c3.getDefense();
-  cerr << to_string(c1.getCost()) + " "  + to_string(c2.getCost()) + " " + to_string(c3.getCost()) << endl;
-  if(cost1 > 0 && cost2 > 0 && cost3 > 0){    
-    int rate1 = (defense1+attack1)/cost1;
-    int rate2 = (defense2+attack2)/cost2;
-    int rate3 = (defense3+attack3)/cost3;
+  float defense1 = c1.getDefense();
+  float defense2 = c2.getDefense();
+  float defense3 = c3.getDefense();
+
+  if(cost1 > 0 && cost2 > 0 && cost3 > 0){ 
+    float rate1 = (defense1+attack1)/cost1;
+    float rate2 = (defense2+attack2)/cost2;
+    float rate3 = (defense3+attack3)/cost3;
+    cerr << rate1 << endl;
     if(nbTour < 31){
-      if(defense1 > attack1 && (rate1 > rate2 && rate1 > rate3)){
+      if((rate1 > rate2 && rate1 > rate3)){
         bestCard = 0;
-      }else if(defense2 > attack2 && (rate2 > rate1 && rate2 > rate3)){
+        cerr << bestCard << endl;
+      }else if((rate2 > rate1 && rate2 > rate3)){
         bestCard = 1;
-      }else if(defense3 > attack3 && (rate3 > rate1 && rate3 > rate2)){
+        cerr << bestCard << endl;
+      }else if((rate3 > rate1 && rate3 > rate2)){
         bestCard = 2;
-      }
+        cerr << bestCard << endl;
+      }else if(defense1 >= attack1 && (rate1 > rate2 && rate1 > rate3)){
+        bestCard = 0;
+        cerr << bestCard << endl;
+      }else if(defense2 >= attack2 && (rate2 > rate1 && rate2 > rate3)){
+        bestCard = 1;
+        cerr << bestCard << endl;
+      }else if(defense3 >= attack3 && (rate3 > rate1 && rate3 > rate2)){
+        bestCard = 2;
+        cerr << bestCard << endl;
+      } 
     }
   }
-
   return bestCard;
 }
 // init des joueurs avant de commencer la partie.
@@ -370,18 +385,13 @@ int main()
               int cardDraw;
               cin >> cardNumber >> instanceId >> location >> cardType >> cost >> attack >> defense >> abilities >> myHealthChange >> opponentHealthChange >> cardDraw; cin.ignore();
               if(nbCarteDraft == 1){
-                cerr << " carte 1 : " + to_string(cost) << endl;
                 carte1 = Card(cardNumber, instanceId, location, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw);
-                cerr << " carte 1 init : " + to_string(carte1.getCost()) << endl;
               }else if(nbCarteDraft == 2){
-                 cerr << " carte 2 : " + to_string(cost) << endl;
                 carte2 = Card(cardNumber, instanceId, location, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw);
-                cerr << " carte 2 init : " + to_string(carte2.getCost()) << endl;
               }else if(nbCarteDraft == 3){
-                 cerr << " carte 3 : " + to_string(cost) << endl;
                 carte3 = Card(cardNumber, instanceId, location, cardType, cost, attack, defense, abilities, myHealthChange, opponentHealthChange, cardDraw);
-                cerr << " carte 3 init : " + to_string(carte3.getCost()) << endl;
               }
+              nbCarteDraft++;
           }
 
           Card *ptr_carte1 (0);
@@ -394,13 +404,11 @@ int main()
           ptr_carte3 = &carte3;
 
 
-          Card cardX1 = *ptr_carte1;
+          Card cardX1 = *ptr_carte2;
           //resultat de la comparaison
-          cerr << "Address Carte 2 avant compar : "  << &carte2 << endl;
-          cerr << "Address Carte 2 avant compar : "  << cardX1.getCost() << endl;
-          actionZ = compareCard(*ptr_carte1, *ptr_carte2, *ptr_carte3, nbTour);
-          cout << "PICK " + to_string(actionZ)  << endl; 
-          nbCarteDraft++;
+          actionZ = compareCard(ptr_carte1, ptr_carte2, ptr_carte3, nbTour);
+          cout << "PICK " << actionZ  << endl; 
+          
           cerr << nbTour << endl;
         }
         nbTour++;

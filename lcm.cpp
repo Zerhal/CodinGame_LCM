@@ -96,7 +96,8 @@ class Player{
 
     std::vector<Card> playerDeckCard {}; // tableau de carte contant notre liste de carte de nore deck en fonction de carte choisis lors du draft
 
-    std::vector<int> manaCourbe {0,0,0,0,0,0,0}; // tableau representant la courbe de mana actuelle
+    std::vector<int> manaCourbe {0,0,0,0,0,0,0,0}; // tableau representant la courbe de mana actuelle
+    std::vector<int> manaCourbeIdeal {2,4,5,4,7,2,5,1}; // tableau representant la courbe de mana actuelle
 
   public:
   Player(){};
@@ -114,8 +115,20 @@ class Player{
     this->manaCourbe.at(p) = c;
   }
 
-  vector<int> getManaCourbe(){
+  int getManaCourbe(int i){
+    return this->manaCourbe.at(i);
+  }
+
+  int getManaCourbeIdeal(int i){
+    return this->manaCourbeIdeal.at(i);
+  }
+
+  vector<int> getManaCourbeV(){
     return this->manaCourbe;
+  }
+
+  vector<int> getManaCourbeIdealV(){
+    return this->manaCourbeIdeal;
   }
 
   // Player Deck
@@ -226,6 +239,9 @@ class Player{
     this->playerDraw = draw;
   }
 };
+
+Player zerhal = Player();
+Player ennemi = Player();
 // Comparaison des carte pour le choix lors du Darft
 int compareCard(Card* ptr_c1, Card* ptr_c2, Card* ptr_c3, int nbTour){
 
@@ -250,34 +266,65 @@ int compareCard(Card* ptr_c1, Card* ptr_c2, Card* ptr_c3, int nbTour){
     float rate1 = (defense1+attack1)/cost1;
     float rate2 = (defense2+attack2)/cost2;
     float rate3 = (defense3+attack3)/cost3;
-    cerr << rate1 << endl;
-    if(nbTour < 31){
-      if((rate1 > rate2 && rate1 > rate3)){
+    if(nbTour < 15){      
+      if(defense1 >= attack1 && (rate1 > rate2 && rate1 > rate3)){
         bestCard = 0;
-        cerr << bestCard << endl;
-      }else if((rate2 > rate1 && rate2 > rate3)){
-        bestCard = 1;
-        cerr << bestCard << endl;
-      }else if((rate3 > rate1 && rate3 > rate2)){
-        bestCard = 2;
-        cerr << bestCard << endl;
-      }else if(defense1 >= attack1 && (rate1 > rate2 && rate1 > rate3)){
-        bestCard = 0;
-        cerr << bestCard << endl;
       }else if(defense2 >= attack2 && (rate2 > rate1 && rate2 > rate3)){
         bestCard = 1;
-        cerr << bestCard << endl;
       }else if(defense3 >= attack3 && (rate3 > rate1 && rate3 > rate2)){
         bestCard = 2;
-        cerr << bestCard << endl;
-      } 
+      }else if(defense1 >= attack1 && (rate1 > rate2 || rate1 > rate3)){
+        bestCard = 0;
+      }else if(defense2 >= attack2 && (rate2 > rate1 || rate2 > rate3)){
+        bestCard = 1;
+      }else if(defense3 >= attack3 && (rate3 > rate1 || rate3 > rate2)){
+        bestCard = 2;
+      }
     }
   }
+  if(nbTour >= 15){
+    cerr << zerhal.getManaCourbeIdealV().size() << endl;
+    int manaCourbeC1 = zerhal.getManaCourbe(cost1 < 6 ? cost1 : 7);
+    int manaCourbeC2 = zerhal.getManaCourbe(cost2 < 6 ? cost2 : 7);
+    int manaCourbeC3 = zerhal.getManaCourbe(cost3 < 6 ? cost3 : 7);
+
+    int manaCourbeIdealC1 = zerhal.getManaCourbeIdeal(cost1 < 6 ? cost1 : 7);      
+    int manaCourbeIdealC2 = zerhal.getManaCourbeIdeal(cost2 < 6 ? cost2 : 7);      
+    int manaCourbeIdealC3 = zerhal.getManaCourbeIdeal(cost3 < 6 ? cost3 : 7);
+
+    int poidC1 = (attack1 + defense1) / (cost1 == 0 ? 1 : cost1);
+    int poidC2 = (attack1 + defense1) / (cost2 == 0 ? 1 : cost2);
+    int poidC3 = (attack1 + defense1) / (cost3 == 0 ? 1 : cost3);
+    if(manaCourbeC1 < manaCourbeIdealC1 && defense1 >= attack1 && (poidC1 > poidC2 && poidC1 > poidC3)){
+      bestCard = 0;
+    }else if(manaCourbeC2 < manaCourbeIdealC2 && defense2 >= attack2 && (poidC2 > poidC1 && poidC2 > poidC3)){
+      bestCard = 1;
+    }else if(manaCourbeC3 < manaCourbeIdealC3 && defense3 >= attack3 && (poidC3 > poidC1 && poidC3 > poidC2)){
+      bestCard = 2;
+    }else if(manaCourbeC1 < manaCourbeIdealC1 && defense1 >= attack1 && (poidC1 > poidC2 || poidC1 > poidC3)){
+      bestCard = 0;
+    }else if(manaCourbeC2 < manaCourbeIdealC2 && defense2 >= attack2 && (poidC2 > poidC1 || poidC2 > poidC3)){
+      bestCard = 1;
+    }else if(manaCourbeC3 < manaCourbeIdealC3 && defense3 >= attack3 && (poidC3 > poidC1 || poidC3 > poidC2)){
+      bestCard = 2;
+    } 
+  }
+
+  if(bestCard == 0){
+    int manaCourbeC1 = zerhal.getManaCourbe(cost1 < 6 ? cost1 : 7);
+    zerhal.setManaCourbe(cost1 < 6 ? cost1 : 7, manaCourbeC1+1);
+  }else if(bestCard == 1){
+    int manaCourbeC2 = zerhal.getManaCourbe(cost2 < 6 ? cost2 : 7);
+    zerhal.setManaCourbe(cost2 < 6 ? cost2 : 7, manaCourbeC2+1);
+  }else if(bestCard == 2){
+    int manaCourbeC3 = zerhal.getManaCourbe(cost3 < 6 ? cost3 : 7);
+    zerhal.setManaCourbe(cost3 < 6 ? cost3 : 7, manaCourbeC3+1);
+  }
+  cerr << zerhal.getManaCourbeV().at(0) << " " << zerhal.getManaCourbeV().at(1)<< " " << zerhal.getManaCourbeV().at(2) << " "<< zerhal.getManaCourbeV().at(3) << " "<< zerhal.getManaCourbeV().at(4)<< " " << zerhal.getManaCourbeV().at(5)<< " " << zerhal.getManaCourbeV().at(6)<< " " << " " << zerhal.getManaCourbeV().at(7)<< endl;
   return bestCard;
 }
 // init des joueurs avant de commencer la partie.
-Player zerhal = Player();
-Player ennemi = Player();
+
 int main()
 {
     int nbTour = 1;
@@ -408,8 +455,6 @@ int main()
           //resultat de la comparaison
           actionZ = compareCard(ptr_carte1, ptr_carte2, ptr_carte3, nbTour);
           cout << "PICK " << actionZ  << endl; 
-          
-          cerr << nbTour << endl;
         }
         nbTour++;
     }

@@ -330,25 +330,29 @@ string summonCard(vector<Card> monPlateau ,vector<Card> plateauEnnemi ,vector<Ca
  //  gestion nul de la summon en attendant de réfléchir a un algo correct...
   string summon = "";
   int monMana = zerhal.getPlayerMana();
-  vector<int> defenseMain;
+  vector<int> defenseMain {};
   for(int x = 0; x < maMain.size(); x++){
     for(int i = 0; i < maMain.size();i++){
       if(maMain.at(i).getCost() <= monMana){
         defenseMain.push_back(maMain.at(i).getDefense());
-        cerr << "test def fn " << maMain.at(i).getDefense() << endl;
       }
     }
-    std::vector<int>::iterator result;
-    result =  max_element(defenseMain.begin(), defenseMain.end());
-    int posmaxDef =  std::distance(defenseMain.begin(), result);
-    int maxDef = maMain.at(posmaxDef).getDefense();
+    int maxDef = 0;
+    for(int i = 0; i < defenseMain.size();i++){
+      if(maxDef < defenseMain.at(i)){
+        maxDef =  defenseMain.at(i);
+      }
+    }
+
     if(monPlateau.size() < 6){
       Card carte = maMain.at(x);
-      if(carte.getDefense() == maxDef && monMana >= carte.getCost())
-      summon += "SUMMON " + to_string(carte.getInstanceId());
-      summon += ";";
-      monMana -= carte.getCost();
-      //maMain.erase(maMain.begin()+maxDef);
+      cerr << "x = " << x << "def = " <<  carte.getDefense() << " cout = " << carte.getCost() << " max def = " <<  maxDef <<  endl;
+      if(carte.getDefense() == maxDef && monMana >= carte.getCost()){
+        summon += "SUMMON " + to_string(carte.getInstanceId());
+        summon += ";";
+        monMana -= carte.getCost();
+        //maMain.erase(maMain.begin()+maxDef);
+      }
     }
   }
   return summon;

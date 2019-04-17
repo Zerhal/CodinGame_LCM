@@ -325,6 +325,35 @@ int compareCard(Card* ptr_c1, Card* ptr_c2, Card* ptr_c3, int nbTour){
 }
 // init des joueurs avant de commencer la partie.
 
+
+string summonCard(vector<Card> monPlateau ,vector<Card> plateauEnnemi ,vector<Card> maMain){
+ //  gestion nul de la summon en attendant de réfléchir a un algo correct...
+  string summon = "";
+  int monMana = zerhal.getPlayerMana();
+  vector<int> defenseMain;
+  for(int x = 0; x < maMain.size(); x++){
+    for(int i = 0; i < maMain.size();i++){
+      if(maMain.at(i).getCost() <= monMana){
+        defenseMain.push_back(maMain.at(i).getDefense());
+        cerr << "test def fn " << maMain.at(i).getDefense() << endl;
+      }
+    }
+    std::vector<int>::iterator result;
+    result =  max_element(defenseMain.begin(), defenseMain.end());
+    int posmaxDef =  std::distance(defenseMain.begin(), result);
+    int maxDef = maMain.at(posmaxDef).getDefense();
+    if(monPlateau.size() < 6){
+      Card carte = maMain.at(x);
+      if(carte.getDefense() == maxDef && monMana >= carte.getCost())
+      summon += "SUMMON " + to_string(carte.getInstanceId());
+      summon += ";";
+      monMana -= carte.getCost();
+      //maMain.erase(maMain.begin()+maxDef);
+    }
+  }
+  return summon;
+}
+
 int main()
 {
     int nbTour = 1;
@@ -368,7 +397,7 @@ int main()
 
         // si on a passer la phase de draft
         if(nbTour > 30){
-          string actionZerhal;
+          string actionZerhal = "";
           zerhal.clearPlateau();
           ennemi.clearPlateau();
           zerhal.clearMain();
@@ -394,18 +423,12 @@ int main()
             }else{
               ennemi.setPlateau(carte);
             }
-            //  gestion nul de la summon en attendant de réfléchir a un algo correct...
-            cerr << "card cost " + to_string(carte.getCost()) + " zerhal vie = " + to_string(zerhal.getPlayerHealth()) << endl;
-            if(carte.getLocation() == 0 && zerhal.getPlateau().size() < 6){
-              if(carte.getCost() <= zerhal.getPlayerMana()){
-                int id = carte.getInstanceId();
-                cerr << "id : " + to_string(id) << endl;
-                actionZerhal = "SUMMON " + to_string(id);
-              }
-            }else if(carte.getLocation() == 1){
-              
-            }
           }
+          vector<Card> monPlateau = zerhal.getPlateau();
+          vector<Card> plateauEnnemi = ennemi.getPlateau();
+          vector<Card> maMain = zerhal.getMainActuelle();
+          actionZerhal += summonCard(zerhal.getPlateau(), ennemi.getPlateau(), zerhal.getMainActuelle());
+          cerr << " test " << actionZerhal << endl;
           if(actionZerhal.length() < 5){
             actionZerhal = "PASS";
           }

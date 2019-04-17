@@ -54,8 +54,16 @@ class Card{
       return this->attack;
     }
 
+    string getAbility(){
+      return this->abilities;
+    }
+
     int getDefense(){
       return this->defense;
+    }
+
+    void  setLessDefense(int v){
+      this->defense -= v ;
     }
 
     int getLocation(){
@@ -325,6 +333,40 @@ int compareCard(Card* ptr_c1, Card* ptr_c2, Card* ptr_c3, int nbTour){
 }
 // init des joueurs avant de commencer la partie.
 
+string attack(vector<Card> monPlateau ,vector<Card> plateauEnnemi){
+  string attack = "";
+  int vieEnnemi = ennemi.getPlayerHealth();
+  for(int i = 0; i < monPlateau.size();i++){
+    if(vieEnnemi - monPlateau.at(i).getAttack() <= 0){
+      attack = "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " -1;";
+      return attack;
+    }
+  }
+  for(int i = 0; i < monPlateau.size();i++){
+    for(int j = 0; j < plateauEnnemi.size();j++){
+      if(plateauEnnemi.at(j).getDefense() > 0  && plateauEnnemi.at(j).getDefense() - monPlateau.at(i).getAttack() <= 0 &&  monPlateau.at(i).getDefense() - plateauEnnemi.at(j).getAttack() > 0){
+        attack += "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " " + to_string(plateauEnnemi.at(j).getInstanceId())+ ";";
+        plateauEnnemi.at(j).setLessDefense(monPlateau.at(i).getAttack());
+      }else if(plateauEnnemi.at(j).getAbility() == "G" && plateauEnnemi.at(j).getDefense() -  monPlateau.at(i).getAttack() <= 0 && monPlateau.at(i).getDefense() - plateauEnnemi.at(j).getAttack() > 0 ){
+        attack += "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " -1;";
+        vieEnnemi -= monPlateau.at(i).getAttack();
+      }else if(plateauEnnemi.at(j).getAbility() == "G" && plateauEnnemi.at(j).getDefense() -  monPlateau.at(i).getAttack() <= 0){
+        attack += "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " -1;";
+        vieEnnemi -= monPlateau.at(i).getAttack();
+      }else if(plateauEnnemi.at(j).getAbility() == "G" && monPlateau.at(i).getDefense() - plateauEnnemi.at(j).getAttack() > 0 ){
+        attack += "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " -1;";
+        vieEnnemi -= monPlateau.at(i).getAttack();
+      }else{
+        attack += "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " -1;";
+        vieEnnemi -= monPlateau.at(i).getAttack();
+      }
+    }
+    if(plateauEnnemi.size()<=0){
+      attack += "ATTACK " + to_string(monPlateau.at(i).getInstanceId()) + " -1;";
+    }
+  }
+  return attack;
+}
 
 string summonCard(vector<Card> monPlateau ,vector<Card> plateauEnnemi ,vector<Card> maMain){
  //  gestion nul de la summon en attendant de réfléchir a un algo correct...
@@ -401,6 +443,7 @@ int main()
 
         // si on a passer la phase de draft
         if(nbTour > 30){
+          cerr << " nb de tour : " << nbTour << " action ennemie : " << opponentActions << endl;
           string actionZerhal = "";
           zerhal.clearPlateau();
           ennemi.clearPlateau();
@@ -432,6 +475,7 @@ int main()
           vector<Card> plateauEnnemi = ennemi.getPlateau();
           vector<Card> maMain = zerhal.getMainActuelle();
           actionZerhal += summonCard(zerhal.getPlateau(), ennemi.getPlateau(), zerhal.getMainActuelle());
+          actionZerhal += attack(zerhal.getPlateau(), ennemi.getPlateau());
           cerr << " test " << actionZerhal << endl;
           if(actionZerhal.length() < 5){
             actionZerhal = "PASS";
